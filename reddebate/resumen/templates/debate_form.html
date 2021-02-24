@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+{% load static %}
+<div id="debateImage_modal" class="modal">
+  <div class="modal-content imagenDeb">
+    <h5>
+      <br>
+      <i class="fa fa-file-image-o" aria-hidden="true"></i> ¿Quieres agregar una imagen al debate?
+    </h5>
+    <div class="modal-body">
+    <form id="imagedebateform" method="POST" enctype="multipart/form-data">{% csrf_token %}
+      <div class="row">
+        <div class="col-sm-6 fieldWrapper">
+          {{ img_form.errors }}
+          {{ img_form }}
+        </div>
+        <div class="col-sm-6 prev">
+          <img id="imgPrev" height="150px" src="" />
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer-buttons">
+        <button name="new_img_deb" type="submit">Subir Imagen</button>
+        <label type="button" onClick="window.location.reload()"> No, agregaré una más tarde </label>
+      </div>
+    </form>
+  </div>
+</div>
+
+<form id="nuevodebateform" method="POST" enctype="multipart/form-data">{% csrf_token %}
+    <fieldset>
+      <div class="row leftAlign">
+        <div class="col-sm-6">
+          {{ form.non_field_errors }}
+          <div class="fieldWrapper">
+              {{ form.title.errors }}
+              <label>Titulo Debate *</label>
+              <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                <span class="tooltipformtext">Corresponde al título del debate. Se recomienda que sea una afirmación</span>
+              </div>
+              {{ form.title }}<div id="errorTitulo" class="alert alert-danger" role="alert">¡¡Escribe un título!!</div>
+          </div>
+          <div class="fieldWrapper">
+              {{ form.text.errors }}
+              <label>Descripción Debate</label>
+              <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                <span class="tooltipformtext">Corresponde a la descripción de tu debate, donde puedes detallar la información correspondiente a tu afirmación</span>
+              </div>
+              {{ form.text }}<div id="errorDesc" class="alert alert-danger" role="alert">¡¡Escribe una descripción!!</div>
+          </div>
+          <label> Tags del debate </label>
+          <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <span class="tooltipformtext">Una etiqueta o tag es una palabra clave asignada al debate. Ayudan a clasificar y agrupar debates por temas</span>
+          </div><br>
+          <input id="tagsForms" type="text" data-role="tagsinput"/>
+        </div>
+        <div class="col-sm-6">
+          <div class="fieldWrapper">
+            {{ form.members_type.errors }}
+            <label>Privacidad de debate *</label>
+            <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+              <span class="tooltipformtext">Indica si deseas que tu debate sea publico o privado. Si es privado, debes seleccionar a los usuarios que tendrán acceso</span>
+            </div>
+            {{ form.members_type }}
+            <a id="modificarusr" href="javascript:abrir_modal('usuariosPrivado_modal')" style="display:none"> Modificar usuarios</a>
+            <a id="moficarlista" href="javascript:abrir_modal('usuariosPrivadoLista_modal')" style="display:none"> Modificar lista</a>
+          </div>
+          <div class="fieldWrapper">
+            {{ form.owner_type.errors }}
+            <label>Nombre a mostrar *</label>
+            <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+              <span class="tooltipformtext">Indica si deseas publicar el debate con tu name o con tu alias. Este estará visible a quienes participen del debate</span>
+            </div>
+            {{ form.owner_type }}
+          </div>
+          <div class="fieldWrapper">
+            {{ form.end_date.errors }}
+            <label>Fecha fin del debate</label>
+            <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+              <span class="tooltipformtext">Indica la fecha de cierre automático de tu debate. Si la dejas vacía, no se cerrará hasta que tu mismo lo hagas</span>
+            </div><br>
+            {{ form.end_date }}
+          </div>
+        </div>
+      </div>
+      <div id="opcionesAvanzadas_modal" class="modal">
+      	<div class="modal-content">
+          <h5>
+            <span class="close" onclick="cerrar_modal('opcionesAvanzadas_modal')">&times;</span><br>
+            Opciones Avanzadas
+          </h5>
+          <div class="row leftAlign">
+           <div class="col-sm-1"></div>
+           <div class="col-sm-5">
+             {{ form.position_max.errors }}
+             <label>Cambios de postura por cada usuario</label>
+             <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+               <span class="tooltipformtext">Indica la cantidad de veces que los usuarios pueden cambiar de postura en tu debate</span>
+             </div>
+             <div class="input-group spinner">
+               {{ form.position_max }}
+               <div class="input-group-btn-vertical">
+                 <a href="javascript: spinnerReglas('debChangePositionForm', '1','10','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                 <a href="javascript: spinnerReglas('debChangePositionForm','-1','10','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a>
+               </div>
+             </div>
+           </div>
+           <div class="col-sm-5">
+             {{ form.participation_type.errors }}
+             <label>Tipo de participación de cada usuario</label>
+             <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+               <span class="tooltipformtext">Indica que nombre a mostrar pueden usar los usuarios al participar en el debate</span>
+             </div>
+             {{ form.participation_type }}
+             **Valido solo para debates publicos
+           </div>
+           <div class="col-sm-1"></div>
+         </div>
+         <div class="row leftAlign">
+           <div class="col-sm-1"></div>
+             <div class="col-sm-5">
+               {{ form.args_max.errors }}
+               <label> Cantidad de argumentos por cada usuario </label>
+               <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                 <span class="tooltipformtext">Indica la cantidad máxima de argumentos que los usuarios pueden publicar en tu debate</span>
+               </div>
+               <div class="input-group spinner">
+                 {{ form.args_max }}
+                 <div class="input-group-btn-vertical">
+                   <a href="javascript: spinnerReglas('debArgsForm','1','3','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                   <a href="javascript: spinnerReglas('debArgsForm','-1','3','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a>
+                 </div>
+               </div>
+             </div>
+             <div class="col-sm-5">
+               {{ form.length.errors }}
+               <label>Cantidad de caracteres por cada argumento</label>
+               <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                 <span class="tooltipformtext">Indica la cantidad máxima de caracteres que tendrá cada argument que sea publicado en tu debate</span>
+               </div>
+               <div class="input-group spinner">
+                 {{ form.length }}
+                 <div class="input-group-btn-vertical">
+                   <a href="javascript: spinnerReglas('debLengthForm','1','340','140','100')"class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                   <a href="javascript: spinnerReglas('debLengthForm','-1','340','140','100')"class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a>
+                 </div>
+               </div>
+             </div>
+             <div class="col-sm-1"></div>
+           </div>
+           <div class="row leftAlign">
+             <div class="col-sm-1"></div>
+             <div class="col-sm-5">
+                 {{ form.counterargs_max.errors }}
+                 <label>Cantidad de contraargumentos por usuario</label>
+                 <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                   <span class="tooltipformtext">Indica la cantidad máxima de contraargumentos que los usuarios pueden counterargument1 a los argumentos de tu debate</span>
+                 </div>
+                 <div class="input-group spinner">
+                   {{ form.counterargs_max }}
+                   <div class="input-group-btn-vertical">
+                     <a href="javascript: spinnerReglas('debCounterArgForm', '1','5','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                     <a href="javascript: spinnerReglas('debCounterArgForm','-1','5','1','1')"class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a>
+                   </div>
+                 </div>
+               </div>
+               <div class="col-sm-5">
+                 {{ form.counterarg_type.errors }}
+                 <label>Tipo de contraargumento</label>
+                 <div class="tooltipform"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                   <span class="tooltipformtext">Indica si deseas que los usuarios puedan counterargument1 a argumentos de la postura contraria o a ambas posturas</span>
+                 </div>
+                 {{ form.counterargs_type }}
+               </div>
+               <div class="col-sm-1"></div>
+           </div>
+           <a href="javascript:cerrar_modal('opcionesAvanzadas_modal')" class="submit action-button"> Aceptar </a>
+        </div>
+      </div>
+      <div id="usuariosPrivado_modal" class="modal">
+      	<div class="modal-content">
+          <h5>
+            <span class="close" onclick="cerrar_modal('usuariosPrivado_modal')">&times;</span><br>
+            Usuarios
+          </h5>
+          <div class="fieldWrapper">
+            {{form.members.errors }}
+            <div class="row">
+              <div class="col-sm-6">
+                <label>Buscar: </label>
+                <input type="text" value="" name="searchColumn" class="form-control" id="searchUser1" placeholder="Busca a un usuario..."/>
+              </div>
+              <div class="col-sm-6">
+                {{order_user_form}}
+              </div>
+            </div>
+            <div id="containercheckbox" class="userscheckbox">
+            {% for field in form.members %}
+            <div class="inputGroup">{{field}}</div>
+            {%endfor%}
+            </div>
+            <a href="javascript:cerrar_modal('usuariosPrivado_modal')" class="submit action-button"> Aceptar </a>
+          </div>
+        </div>
+      </div>
+      <div id="usuariosPrivadoLista_modal" class="modal">
+        <div class="modal-content">
+          <h5>
+            <span class="close" onclick="cerrar_modal('usuariosPrivadoLista_modal')">&times;</span><br>
+            Listas
+          </h5>
+          <div class="fieldWrapper">
+            {{form.members.errors }}
+            <input type="text" value="" name="searchColumn" id="searchLista1" placeholder="Busca a un usuario..."/>
+            <div class="radioFiltro">{{ form.filtro }}</div>
+            <div id="containercheckbox" class="userscheckbox">
+              {% for field in form.listado %}
+              <div class="inputGroup">{{field}}</div>
+              {%endfor%}
+            </div>
+            <a href="javascript:cerrar_modal('usuariosPrivadoLista_modal')" class="submit action-button"> Aceptar </a>
+          </div>
+        </div>
+      </div>
+      <div class="leftAlign">
+        <a href="javascript:abrir_modal('opcionesAvanzadas_modal')">
+          <span class="glyphicon glyphicon-cog" aria-hidden="true"> Opciones avanzadas</span></a>
+          <br>
+          (*) Campos obligatorios
+      </div>
+      <input type="submit" name="submit" class="submit action-button" value="Publicar" />
+      <a href="javascript:cierra_formulario('#nuevodebateform')">Cancelar</a>
+
+    </fieldset>
+</form>
+<script  src="{% static 'js/debateform.js' %}"></script>

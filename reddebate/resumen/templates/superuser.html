@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <link rel="stylesheet" type='text/css' href="{% static '/css/login.css' %}" >
+  <link rel="shortcut icon" type="image/png" href="{% static 'img/RDLogo02.png' %}"/>
+  <link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+  <script src="{% static 'js/jquery.js' %}"></script>
+  <script src="{% static 'js/login.js' %}"></script>
+  <meta charset="UTF-8" />
+
+  <title>Inicia Sesión</title>
+</head>
+<body>
+  <div class="materialContainer">
+   <div class="box">
+      <div class="title">Inicia Sesión</div>
+      <div class="error-login">
+      {% if form.non_field_errors %}
+          <ul>
+              {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}</div>
+      <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+        <div class="input">
+          {{ form.username.errors }}
+          <label for="name">Usuario</label>
+          {{ form.username }}
+        </div>
+        <div class="input">
+          {{ form.password.errors }}
+          <label for="pass">Contraseña</label>
+          {{ form.password }}
+        </div>
+        <div class="button login">
+           <button type="submit" ><span>Ingresar</span> <i class="fa fa-check"></i></button>
+        </div>
+    </form>
+   </div>
+
+   <div class="overbox">
+      <div class="material-button alt-2"><IMG SRC="{% static 'img/RDLogo02.png' %}" WIDTH='150' ALT="RedDebateLogo"></div>
+   </div>
+</div>
+</body>
+
+</html>

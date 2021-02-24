@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+	{% block content %}
+  <a href="#search" id="searchBtn"></a>
+
+    <div id="search" class="morphsearch">
+       <a type="button" class="closebtn" href="{% url 'index' %}">×</a>
+       <form action="{% url 'index' %}" method="get" accept-charset="utf-8" class="morphsearch-form">
+          <input name="q" type="search" placeholder="¿Qué buscas?" autocomplete="off">
+          <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+       </form>
+       <div class="morphsearch-content">
+          <div class="dummy-column">
+             <h2>Usuarios</h2>
+             {% for item in top_users %}
+             <a class="dummy-media-object" href="{% url 'username' item.user.id %}">
+                <img class="round" src="{{ item.profile.img.url }}"/>
+                <h3>{{ item.user.username }}</h3>
+             </a>
+             {% endfor %}
+          </div>
+          <div class="dummy-column">
+             <h2>Popular</h2>
+             {% for deb in top_deb %}
+             <a class="dummy-media-object" href="{% url 'showDebate' deb.model.id_debate %}">
+                <label><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{deb.position_num}}</label>
+                <h3>{{ deb.model.title }}</h3>
+             </a>
+             {% endfor %}
+          </div>
+          <div class="dummy-column">
+             <h2>Reciente</h2>
+             {% for deb in recent_data_deb %}
+             <a class="dummy-media-object" href="{% url 'showDebate' deb.model.id_debate %}">
+                <label><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{deb.position_num}}</label>
+                <h3>{{ deb.model.title }}</h3>
+             </a>
+             {% endfor %}
+          </div>
+       </div>
+    </div>
+    <script type="text/javascript">
+      $(document).ready(function(){
+          $("#searchBtn").trigger('click');
+      });
+    </script>
+  {% endblock content %}
+</html>

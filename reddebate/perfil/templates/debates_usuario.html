@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+{% block content %}
+
+<link rel="stylesheet" type='text/css' href="{% static '/css/dataTables.css' %}" >
+<div class="modalcontainerconfirm">
+  <div class="flexconfirm">
+    <div id="cerrarDebate" class="modalconfirm">
+      <div class="close"><span onclick="confirm_modal_close()">&#43;</span></div>
+      <div class="content">
+        <h2>¿Desea cerrar el debate?</h2>
+        <p id="titulodebcerrar"> </p>
+        <form id="id" method="post" action= "{% url 'debates' %}"  enctype="multipart/form-data">{% csrf_token %}
+            <input type="hidden" id="iddebacerrar" value="" name="id_deb">
+      </div>
+      <div class="buttons">
+        <a href="javascript:confirm_modal_close()">Cancelar</a>
+        <button type="submit">Aceptar</a>
+      </div>
+      </form>
+    </div>
+    <div id="republicarDebate" class="modalconfirm">
+      <div class="close"><span onclick="confirm_modal_close()">&#43;</span></div>
+      <div class="content">
+        <h3 >Gestiona tu debate cerrado</h3>
+        <p id="titulodebrepublicar"> </p>
+        <form id="id" method="post" action= "{% url 'debates' %}"  enctype="multipart/form-data">{% csrf_token %}
+            <input type="hidden" id="iddebarepublicar" value="" name="id_deb_republish">
+            <h4>¿Qué deseas realizar?</h4>
+            <input type="radio" name="tab" value="NULL" onclick="quitarFecha();" checked/> Volver a publicar sin fecha límite<br>
+            <input type="radio" name="tab" value="fechafin" onclick="mostrarFecha();" /> Volver a publicar con fecha límite<br>
+            <input type="date" name="nuevafecha" class="form-control" id="fechafin2" disabled>
+            <input type="radio" name="tab" value="deleteDebClosed" /> Eliminar Debate <br>
+      </div>
+      <div class="buttons">
+        <a href="javascript:confirm_modal_close()">Cancelar</a>
+        <button type="submit">Aceptar</a>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="container-debate">
+  <header>
+    <h2>Mis Debates</h2>
+    <p>{{user.get_full_name}}</p>
+  </header>
+  <!-- <button id="btnValoresSeleccionados" type="button" class="btn btn-primary">Valores Seleccionadas</button> -->
+  <table id="myTable" class="table" cellspacing="0" width="100%">
+      <thead>
+          <tr>
+              <th>Título</th>
+              <th>Estado</th>
+              <th>Tipo</th>
+              <th>Posturas</th>
+              <th>Argumentos</th>
+              <th>Visitas</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for deb in total_data_deb %}
+          <tr>
+              <td>
+                <a href="{% url 'showDebate' deb.model.id_debate %}">{{deb.model.title}}</a>
+              </td>
+              {% ifequal deb.model.state 'open'  %}
+              <td>
+                <a href="javascript:confirm_modal_show(1,'{{deb.model.id_debate}}', '{{deb.model.title}}')"> Abierto </a>
+              </td>
+              {% else %}
+              <td>
+                <a href="javascript:confirm_modal_show(2,'{{deb.model.id_debate}}', '{{deb.model.title}}')"> Cerrado </a>
+              </td>
+              {% endifequal %}
+              {% ifequal deb.model.members_type 1%}
+                <td> Privado </td>
+              {% else %}
+                <td> Público </td>
+              {% endifequal %}
+              <td >{{deb.position_num}}</td>
+              <td >{{deb.arg_num}}</td>
+              <td >{{deb.visits}}</td>
+              <td>{{deb.model.date|date:"d/m/Y"}}</td>
+              {% if deb.model.end_date %}
+              <td>{{deb.model.end_date|date:"d/m/Y"}}</td>
+              {% else %}
+              <td> No definido </td>
+              {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  <script src="{% static 'js/dataTable.js' %}"></script>
+</div>
+
+
+{% endblock content %}
+</html>

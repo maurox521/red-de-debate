@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+
+	{% block content %}
+	{% if user.is_staff or user.is_superuser %}
+	{% include 'moderador_filtro.html' %}
+	{% else %}
+  <div class="container-debate">
+        <header>
+          <h2>{{label}}</h2>
+          <p>{{total_data_deb|length}} debates | {{public_deb}} publicos | {{private_deb}} privados </p>
+        </header>
+        {% ifequal total_data_deb|length 0 %}
+          <h3> ¡No hay resultados!</h3>
+        {% else %}
+					<ul class="cards">
+						{% for deb in total_data_deb %}
+          		{% include 'grilla.html' with index=True%}
+						{% endfor %}
+					</ul>
+        {%endifequal%}
+
+  </div>
+	{% endif %}
+  {% endblock content %}
+
+</html>

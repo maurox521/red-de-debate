@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+<html>
+
+{% block content %}
+<link rel="stylesheet" type='text/css' href="{% static '/css/perfil.css' %}" >
+{% if target_user.is_staff or target_user.is_superuser %}
+{% include 'moderador_perfil.html' %}
+{% else %}
+<div class="row">
+  <div class="col-sm-6">
+    <div class="container-profile left-container">
+      <header>
+      </header>
+      <main class="center">
+        {% ifequal name_type 'username' %}
+        <div class="photo-left">
+          <img class="photo" src="{{alias.img.url}}"/>
+          <div class="active"></div>
+        </div>
+        <h4 class="name">{{target_user.username}}</h4>
+        <p class="info">{{ target_user.email }}</p>
+        {% else %}
+        <div class="photo-left">
+          <img class="photo" src="{% static 'img/RDLogo05.png' %}"/>
+          <div class="active"></div>
+        </div>
+        <h4 class="name">{{ alias.alias }}</h4>
+        <p class="info">modo anónimo</p>
+
+        {% endifequal %}
+        {% if user.is_superuser %}
+        <form id="delete_user" method="post" action= "{% url 'resumen:index' %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el usuario?');">{% csrf_token %}
+           <input type="hidden" value="{{ target_user.id }}" name="id_user_delete">
+           <button type="submit" class="btn btn-demo">
+             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+           </button>
+       </form>
+       {% endif %}
+        <div class="stats row">
+          <div class="stat col-xs-6">
+            <h4 class="name">{{alias.reputation}}</h4>
+            <p class="info">Reputación</p>
+          </div>
+          <div class="stat col-xs-6">
+            <h4 class="name">{{stats.deb_num}}</h4>
+            <p class="info">Publicaciones</p>
+          </div>
+        </div>
+        <div class="stats row">
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.position_num}}</p>
+            <p class="desc-stat">Posturas</p>
+          </div>
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.args_num}}</p>
+            <p class="desc-stat">Argumentos </p>
+          </div>
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.counterargs_num}}</p>
+            <p class="desc-stat">Contraargumentos</p>
+          </div>
+        </div>
+        <div class="stats row">
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.reached_users}}</p>
+            <p class="desc-stat">Personas alcanzadas</p>
+          </div>
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.best_arg}}</p>
+            <p class="desc-stat">Mejor Argumento</p>
+          </div>
+          <div class="stat col-xs-4">
+            <p class="number-stat">{{stats.worse_arg}}</p>
+            <p class="desc-stat">Peor Argumento</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="container-profile right-container">
+      <header class="header-info">
+        <h3><i class="fa fa-tags" aria-hidden="true"></i> Tags</h3>
+      </header>
+      <main>
+        <div class="tag-cloud">
+            {% for key,value in stats.tags.items %}
+              <a href="{% url 'tagged' key %}" class="size-{{ value }}">{{ key }}</a>
+            {% endfor %}
+          </div>
+      </main>
+    </div>
+    {% if not user.is_staff and not user.is_superuser %}
+      <div class="container-profile right-container">
+        <header class="header-info">
+          <h3><i class="fa fa-user-plus" aria-hidden="true"></i> Agregar</h3>
+        </header>
+        <main>
+          {% if already_in_list|length > 0 %}
+            <p>Ya lo añadiste a: </p>
+            <div class="listasModal">
+            {% for list in already_in_list%}
+                <a href="{% url 'memberList' list.id %}"><i class="fa fa-check" aria-hidden="true"></i> {{list.name}}</a>
+            {% endfor %}
+            </div>
+          {% else %}
+            <p>No pertenece a ninguna de tus listas</p>
+          {% endif %}
+          {% if form.list_id|length > 0 %}
+            <p>Puedes agregarlo a:</p>
+            <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+            <div class="fieldWrapper">
+              {{form.errors }}
+              <input type="hidden" name="type_user" value="{{name_type}}">
+              <div id="listacheckbox" class="userscheckbox">
+              {% for field in form.list_id %}
+              <div class="inputGroup">{{field}}</div>
+              {%endfor%}
+              </div>
+              {% if form_list.name.errors %}
+                <div class="alert alert-danger">
+                  {{form_list.name.errors}}
+                  <script>
+                  $(document).ready(function(){
+                      try{document.getElementById("add_usr_list").click();}
+                      catch(err){}});
+                  </script>
+                </div>
+              {% endif %}
+              {{form.user}}
+              <button name="new_user_list" type="submit" class="btn btn-index">Agregar</button>
+            </div>
+            </form>
+          {% else %}
+            <p>No hay listas disponibles</p>
+          {% endif %}
+          <a id = 'boton_lista' onclick='javascript:form_perfil("boton_lista", "nueva_lista" );'>
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Nueva Lista
+          </a>
+          <div id='nueva_lista' style="display: none;" >
+            <p>Nueva Lista: </p>
+            <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+            {{ form_list.non_field_errors }}
+            {{ form_list.owner_id }}
+            {{ form_list.name }}<a href='javascript:cancelar_form("boton_lista", "nueva_lista");'> Cancelar </a>
+            {{form.user}}
+            <input type="hidden" name="type_user" value="{{name_type}}">
+            <button name="add_user_new_list" type="submit" class="btn btn-index">Agregar</button>
+            </form>
+          </div>
+        </main>
+      </div>
+    {% else %}
+    <div class="container-profile right-container">
+      <header class="header-info">
+        <h3><i class="fa fa-users" aria-hidden="true"></i> Más Usuarios</h3>
+      </header>
+      <main>
+        <input type="text" value="" name="searchColumn" id="searchLista2" placeholder="Busca a un user..."/>
+        <div class="listasModal">
+        {% for user in all_users%}
+          {% ifequal user.object.type 'username' %}
+            <a href="{% url 'username' user.object.id %}"><i class="fa fa-user-circle" aria-hidden="true"></i> {{user.name}}</a>
+          {% else %}
+            <a href="{% url 'alias' user.name %}"><i class="fa fa-user-circle" aria-hidden="true"></i> {{user.name}}</a>
+          {% endifequal %}
+        {% endfor %}
+        </div>
+      </main>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock content %}
+
+</html>

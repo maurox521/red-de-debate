@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+{% block content %}
+<div id="participantes_modal" class="modal">
+   <div class="modal-content">
+      <span class="close" onclick="cerrar_modal('participantes_modal')">&times;</span>
+      <h3>Integrantes <span class="glyphicon glyphicon-user"></span></h3>
+      <input type="text" value="" name="searchColumn" id="searchUser3" placeholder="Busca a un usuario..."/>
+      {% for member in debate_members%}
+      {% ifequal member.type 'username' %}
+      <a type = "text" class="dummy-media-object" href="{% url 'username' member.user.id %}">
+         <img class="round" src="{{ member.profile.img.url }}"/>
+         <p> {{member.user}} </p>
+      </a>
+      {% else %}
+      <a type = "text" class="dummy-media-object" href="{% url 'alias' member.profile.alias %}">
+         <img class="round" src="{% static 'img/RDLogo05.png' %}"/>
+         <p> {{member.profile.alias}} </p>
+      </a>
+      {% endifequal%}
+      {% endfor %}
+   </div>
+</div>
+<div id="denuncia_deb_modal" class="modal">
+   <div class="modal-content">
+      <span class="close" onclick="cerrar_modal('denuncia_deb_modal')">&times;</span>
+      <h3>Indica la razón de tu denuncia <span class="glyphicon glyphicon-bullhorn"></span></h3>
+      <form id="reasonReport" method="POST" enctype="multipart/form-data">
+         {% csrf_token %}
+         <input name="id_deb" type="hidden" value={{debate.id_debate}}>
+         {{report_form.type}}
+         {% for field in report_form.reason   %}
+         <div class="inputGroup">{{field}}</div>
+         {%endfor%}
+         <button name="report_debate" type="submit" class="btn btn-index">Denunciar</button>
+      </form>
+   </div>
+</div>
+<div class="container-debate">
+   <header>
+      <div class="row">
+         <div class="col-sm-11">
+            <h2>{{ debate.title }}</h2>
+            <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Visto {{visits}} veces |
+            {% ifequal debate.owner_type 'alias' %}
+            Publicado por <a href="{% url 'alias' owner_profile.alias %}">{{owner_profile.alias}}</a>
+               | {{owner_profile.reputation}} puntos de reputación
+            {%else%}
+            Publicado por <a href="{% url 'username' owner_user.id %}">{{owner_user}}</a>
+               | {{owner_profile.reputation}} puntos de reputación
+            {%endifequal%}
+            <input id="idDebate" type="hidden" value={{debate.id_debate}}>
+         </div>
+         <div class="col-sm-1">
+            {% if can_report_deb %}
+            <button class="btn btn-title" data-toggle="tooltip" title="Denunciar debate" onclick="javascript:abrir_modal('denuncia_deb_modal')">
+            <span class="glyphicon glyphicon-bullhorn"></span>
+            </button>
+            {% endif %}
+         </div>
+      </div>
+   </header>
+   <div class="row debInformation">
+      <div class="col-sm-3 debCenter">
+         <div class="thumbnail">
+            <img src="{{ debate.img.url }}" />
+         </div>
+      </div>
+      <div class="col-sm-9">
+         {{ debate.text }}
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-sm-3 textCenter">
+         <div class="fb-share-button"
+            data-href="https://reddebate.cl/debate/{{ debate.id_debate }}/"
+            data-layout="button_count"
+            data-size="large">
+         </div>
+         <div class="tw-share-button">
+            <a href="https://twitter.com/intent/tweet?status={{debate.title}}+https://reddebate.cl/debate/{{ debate.id_debate }}/" target="_blank">
+            <img src="https://simplesharebuttons.com/images/somacro/twitter.png" alt="Twitter" />
+            Twittear
+            </a>
+         </div>
+      </div>
+      <div class="col-sm-9">
+         {% for tag in tags%}
+         <a class="tag-deb" href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a>
+         {% endfor%}
+      </div>
+   </div>
+   <div class="debLine">
+      <hr>
+   </div>
+   <div id="cambioPostura_modal" class="modal">
+      <div class="modal-content">
+         <span class="close" onclick="cerrar_modal('cambioPostura_modal')">&times;</span>
+         {% if p_post %}
+		         <h3>¿Por qué quieres cambiar de postura? <span class="glyphicon glyphicon-comment"></span></h3>
+		         <div class="modal-body">
+		            <div id="form_razon_cambio">
+		               <input id="postura_debate" type="hidden" value="" name="postura_debate">
+		               <div class="radio"> <label><input type="radio" value="1" name="razon" checked> Cambié de opinión </label></div>
+		               <div class="radio"> <label><input type="radio" value="2" name="razon"> Me equivoqué de botón </label></div>
+		               <div class="radio"> <label><input type="radio" value="3" name="razon"> Otro </label></div>
+		            </div>
+		         </div>
+         {% else %}
+         		<h3> Ya no puedes cambiar de postura </h3>
+         {% endif %}
+         <div class="modal-footer-buttons">
+            <button id="bot_cambiar_post" type="submit" class="btn btn-index" > Aceptar </button>
+            <label type="button" onclick="cerrar_modal('cambioPostura_modal')"> Cancelar </label>
+         </div>
+      </div>
+   </div>
+   <div name="detalle-debate">
+      <div class="row" id="my-row">
+         <div class="col-sm-3 panel">
+            {% ifequal actual_user_position 'No definido' %}
+		            <button id = "bot_af_init" type="submit" class="btn btn-postura1" >
+		            </button>
+            {% else %}
+            		{% ifequal actual_user_position 'A Favor' %}
+            				<button id = "bot_af" type="submit" class="btn btn-posturactual1" disabled ></button>
+            		{% else %}
+            				<button id = "bot_af" type="submit" class="btn btn-postura1" onclick = "confirmar_cambio('1')"></button>
+            		{% endifequal%}
+            {% endifequal %}
+         </div>
+         <div class="col-sm-6">
+            <div class="blank">
+               <table>
+                  <tr>
+                     <td width=120 >
+                        <p1>Fecha inicio</p1>
+                     </td>
+                     <td>{{ debate.date }}</td>
+                  </tr>
+                  <tr>
+                     {%ifequal debate.state 'open'%}
+		                     <td width=120 >
+		                        <p1>Estado</p1>
+		                     </td>
+		                     <td> Abierto </td>
+                     {%else%}
+		                     <td width=120 >
+		                        <p1>Estado</p1>
+		                     </td>
+		                     <td> Cerrado </td>
+		                 {%endifequal%}
+                  </tr>
+                  <tr>
+                     <td width=120 >
+                        <p1>Tu Postura</p1>
+                     </td>
+                     <td>
+                        <div id="tu_postura"> {{actual_user_position}} </div>
+                     </td>
+                  </tr>
+                  {% ifequal debate.members_type 0 %}
+		                  <tr>
+		                     <td width=120 >
+		                        <p1>Tipo debate</p1>
+		                     </td>
+		                     <td>
+		                        <div id="tu_postura">  Publico </div>
+		                     </td>
+		                  </tr>
+                  {% else %}
+		                  <tr>
+		                     <td width=120 >
+		                        <p1>Tipo debate</p1>
+		                     </td>
+		                     <td>
+		                        <div id="tu_postura"> <a href="javascript:abrir_modal('participantes_modal')"> Privado </a></div>
+		                     </td>
+		                  </tr>
+                  {% endifequal %}
+               </table>
+            </div>
+         </div>
+         <div class="col-sm-3 panel">
+            {% ifequal actual_user_position 'No definido' %}
+            		<button id = "bot_ec_init" type="submit" class="btn btn-postura0"></button>
+            {% else %}
+            		{% ifequal actual_user_position 'A Favor' %}
+		            		<button id = "bot_ec" type="submit" class="btn btn-postura0" onclick = "confirmar_cambio('0')"></button>
+		            {% else %}
+		            		<button id = "bot_ec" type="submit" class="btn btn-posturactual0" disabled ></button>
+		            {% endifequal%}
+            {% endifequal %}
+         </div>
+      </div>
+   </div>
+   {% ifequal actual_user_position 'No definido' %}
+			   <div class="row">
+			      <div class="col-sm-6">
+			         <div class="datagrid1 ">
+			            <table id="preview_args1">
+			               <tr>
+			               <thead>
+			                  <th> Mejor argumento a favor </th>
+			               </thead>
+			               </tr>
+			               <tr>
+			                  <td>{{stats.best_infavor_arg}} </td>
+			               </tr>
+			            </table>
+			         </div>
+			      </div>
+			      <div class="col-sm-6">
+			         <div class="datagrid0 ">
+			            <table id="preview_args0">
+			               <tr>
+			               <thead>
+			                  <th> Mejor argumento en contra </th>
+			               </thead>
+			               </tr>
+			               <tr>
+			                  <td>{{stats.best_against_arg}}</td>
+			               </tr>
+			            </table>
+			         </div>
+			      </div>
+			   </div>
+   	 		 <h3> Define tu postura para participar y/o ver más detalles... </h3>
+	 {% else %}
+				 <div id="progresoDebate">
+				    {% ifequal stats.infavor_percent 0 %}
+						    <div id="progreso"class="progress-bar" style="background:#d9534f; width: {{stats.against_percent}}%">
+						       <span class="glyphicon glyphicon-thumbs-down"></span> <label id="label_porc_c">{{stats.against_percent}}%</label>
+						    </div>
+				    {% else %}
+						    {% ifequal stats.against_percent 0 %}
+								    <div id="progreso"class="progress-bar" style="background:#18BC9C; width: {{stats.infavor_percent}}%">
+								       <span class="glyphicon glyphicon-thumbs-up"></span> <label id="label_porc_f">{{stats.infavor_percent}}%</label>
+								    </div>
+						    {% else %}
+								    <div id="progresoFavor"class="progress-bar" style="width: {{stats.infavor_percent}}%">
+								       <span class="glyphicon glyphicon-thumbs-up"></span> <label id="label_porc_f">{{stats.infavor_percent}}%</label>
+								    </div>
+								    <div id="progresoContra"class="progress-bar" style="width: {{stats.against_percent}}%">
+								       <span class="glyphicon glyphicon-thumbs-down"></span> <label id="label_porc_c">{{stats.against_percent}}%</label>
+								    </div>
+						    {% endifequal %}
+				    {% endifequal %}
+				 </div>
+				 <div id="argumentos" style="display: block;" >
+				    <div name="argumentos-debate">
+				       <div class="row">
+				          <div class="col-sm-6">
+				             {% include 'participaciones.html' with name_position="A Favor" arguments=stats.infavor_args_list position=1 num_post=stats.infavor_position_num%}
+				             <div id="alertaArgumento1" class="alert alert-info" role="alert">
+				                <a href="javascript:location.reload()" class="alert-link">Hay nuevos argumentos...</a>
+				             </div>
+				             {% if can_argue %}
+						             {% ifequal actual_user_position 'A Favor' %}
+								             <form id="nuevoArgForm1" method="POST" class="post-form publicarArgumento" enctype="multipart/form-data">{% csrf_token %}
+								                {{arg_form1.as_p}}
+                                <input type="hidden" name="textArg1">
+								                <button id="argument1" name="argument" type="submit" class="btn btn-deb1">Publicar</button>
+								             </form>
+						             {% endifequal %}
+				             {% endif %}
+				          </div>
+				          <div class="col-sm-6">
+				             {% include 'participaciones.html' with name_position="En Contra" arguments=stats.against_args_list position=0 num_post=stats.against_position_num%}
+				             <div id="alertaArgumento0" class="alert alert-info" role="alert">
+				                <a href="javascript:location.reload()" class="alert-link">Hay nuevos argumentos...</a>
+				             </div>
+				             {% if can_argue %}
+						             {% ifequal actual_user_position 'En Contra' %}
+								             <form id="nuevoArgForm0" method="POST" class="post-form publicarArgumento" enctype="multipart/form-data">{% csrf_token %}
+								                {{arg_form0.as_p}}
+                                <input type="hidden" name="textArg0">
+								                <button id="argument0" name="argument" type="submit" class="btn btn-deb0">Publicar</button>
+								             </form>
+						             {% endifequal %}
+				             {% endif %}
+				          </div>
+				       </div>
+				    </div>
+				    <p class="bottom-three">.</p>
+				 </div>
+	 {% endifequal %}
+</div>
+<script>
+$(document).ready(function() {
+  $("#bot_af_init").click(function(){
+    $('#bot_af_init').prop('disabled',true)
+  });
+  $("#bot_af").click(function(){
+    $('#bot_af').prop('disabled',true)
+  });
+  $("#bot_ec_init").click(function(){
+    $('#bot_ec_init').prop('disabled',true)
+  });
+  $("#bot_ec").click(function(){
+    $('#bot_ec').prop('disabled',true)
+  });
+});
+</script>
+{% endblock content %}
+</html>

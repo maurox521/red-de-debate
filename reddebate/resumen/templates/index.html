@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+	{% block content %}
+	{% if user.is_staff or user.is_superuser %}
+	{% include 'moderador_index.html' %}
+	{% else %}
+	<div id="nuevoDebateBtn" align="right" >
+		<a href="{% url 'searchView'%}" class="btn btn-debate"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
+		<button onclick="despliega_formulario('#nuevodebateform')" type="submit" class="btn btn-debate" data-toggle="tooltip" data-placement="bottom" title="Nuevo debate"> + </button>
+	</div>
+		{% include 'debate_form.html' %}
+    <br><br>
+    <div class="container">
+		<div class="row">
+			<div class="col-sm-2">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">¡Hola!</h3>
+				 </div>
+	 				<div class="panel-body">
+						<p>{{ user.get_full_name }}</p>
+						<a href="{% url 'logout' %}"> Cerrar Sesión</a>
+					</div>
+	     </div>
+
+				<div class="panel panel-default">
+				  <div class="panel-heading">
+				    <h3 class="panel-title">Top Tags</h3>
+				  </div>
+				  <div class="panel-body">
+				    {% for tag in top_tags %}
+							<a href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a><br>
+							<p> {{tag.num_times}}</p>
+						{% endfor %}
+				  </div>
+				</div>
+			</div>
+			<div class="col-sm-10">
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="control-group">
+							<!-- <form id="tipoDeb" method="post" action= "{% url 'index' %}" enctype="multipart/form-data">{% csrf_token %} -->
+								<label class="control control--radio">Todos
+									<input id="r1" type="radio" name="radioDeb" value="2" checked/>
+									<div class="control__indicator"></div>
+								</label>
+								<label class="control control--radio">Públicos
+									<input id="r2" type="radio" name="radioDeb" value="0"/>
+									<div class="control__indicator"></div>
+								</label>
+								<label class="control control--radio">Privados
+									<input id="r3" type="radio" name="radioDeb" value="1"/>
+									<div class="control__indicator"></div>
+							</label>
+						</div>
+					</div>
+					<div class="col-sm-5">
+						<div class="control-group">
+									<form method="GET" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+												{{ order_form.order_type }}
+												<button type='submit'> ok </button>
+									</form>
+							</div>
+						</div>
+						<div id="deb_order_select" class="hidden">{{debates_order}}</div>
+					</div>
+				<div id="alertaDeb0" class="alert alert-info" role="alert">
+					<a href="javascript:location.reload()" class="alert-link">Hay nuevos debates...</a>
+				</div>
+				<div id="alertaDeb1" class="alert alert-info" role="alert">
+					<a href="javascript:location.reload()" class="alert-link">Hay nuevos debates privados...</a>
+				</div>
+				<ul id="todos" class="cards">
+					{% for deb in total_data_deb %}
+						{% include 'grilla.html' with index=True%}
+					{% endfor %}
+				</ul>
+				<ul id="publicos" class="cards">
+					{% for deb in total_data_deb %}
+						{% ifequal deb.model.members_type 0 %}
+							{% include 'grilla.html' with index=True%}
+						{% endifequal %}
+					{% endfor %}
+				</ul>
+				<ul id="privados" class="cards">
+					{% for deb in total_data_deb %}
+						{% ifequal deb.model.members_type 1 %}
+							{% include 'grilla.html' with index=True%}
+						{% endifequal %}
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<p class="bottom-three">.</p>
+	{% endif %}
+	{% endblock content %}
+</html>

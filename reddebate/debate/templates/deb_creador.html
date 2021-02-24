@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<div id="updateImage_modal" class="modal">
+  <div class="modal-content imagenDeb">
+    <h5>
+      <span class="close" onclick="cerrar_modal('updateImage_modal')">&times;</span><br>
+      <i class="fa fa-file-image-o" aria-hidden="true"></i> Cambia la imagen del debate
+    </h5>
+    <div class="modal-body">
+    <form id="imagedebateform" method="POST" enctype="multipart/form-data">{% csrf_token %}
+      <div class="row">
+        <div class="col-sm-6 fieldWrapper">
+					<input name="deb_img" type="hidden" value={{debate.id_debate}}>
+          {{ updateImg_form.errors }}
+          {{ updateImg_form }}
+					<br>
+					<p>Se recomienda una imagen cuadrada con tamaño mínimo de 200 x 200 píxeles</p>
+        </div>
+        <div class="col-sm-6 prev">
+          <img id="updateImgPrev" height="150px" src="" />
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer-buttons">
+        <button name="update_img_deb" type="submit">Agregar</button>
+        <label type="button" onclick="cerrar_modal('updateImage_modal')"> Cancelar </label>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="positionChange_modal" class="modal">
+  <div class="modal-content">
+    <h5>
+      <span class="close" onclick="cerrar_modal('positionChange_modal')">&times;</span>
+      <br><br>
+    </h5>
+    <div id="chart_razonCambio"></div>
+  </div>
+</div>
+<div id="informationDeb_modal" class="modal">
+  <div class="modal-content">
+     <h5>
+        <span class="close" onclick="cerrar_modal('informationDeb_modal')">&times;</span><br>
+        <i class="fa fa-info-circle" aria-hidden="true"></i> Información de tu Debate
+     </h5>
+     <div class="row">
+        <div class="col-sm-6 informationDebOwner">
+           <p1>Descripción </p1>
+           <p class="debateDescripcion">{{ debate.text }}</p>
+           <div class="tagsOwner">
+              {% for tag in tags%}
+              <a class="tag-deb" href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a>
+              {% endfor%}
+           </div>
+        </div>
+        <div class="col-sm-6">
+           <div>
+              <p><b>Fecha inicio:</b>  {{ debate.date }}</p>
+              {%ifequal debate.stat 'open'%}
+              <p><b>Estado:</b> Abierto </p>
+              {%else%}
+              <p><b>Estado:</b>  Cerrado</p>
+              {% endifequal %}
+              {% ifequal debate.members_type 0 %}
+              <p><b>Tipo debate:</b> Público</p>
+              {% else %}
+              <p><b>Tipo debate:</b> Privado</p>
+              {% endifequal %}
+           </div>
+           {% ifequal debate.members_type 1 %}
+           <b>Participantes</b>
+           <div class="membersDebOwner">
+              {% for member in debate_members%}
+              {% ifequal member.type 'username' %}
+              <a type = "text" class="dummy-media-object" href="{% url 'username' member.user.id %}">
+                 <img class="round" src="{{ member.profile.img.url }}"/>
+                 <p> {{member.user}} </p>
+              </a>
+              {% else %}
+              <a type = "text" class="dummy-media-object" href="{% url 'alias' member.profile.alias %}">
+                 <img class="round" src="{% static 'img/RDLogo05.png' %}"/>
+                 <p> {{member.profile.alias}} </p>
+              </a>
+              {% endifequal%}
+              {% endfor %}
+           </div>
+           {% endifequal%}
+        </div>
+     </div>
+  </div>
+</div>
+<div class="container-debate">
+	<header>
+		<div class="row">
+			<div class="col-sm-11">
+				<h2>{{ debate.title }}</h2>
+				<input id="idDebate" type="hidden" value={{debate.id_debate}}>
+				<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Visto {{visits}} veces |
+        Debate creado por ti
+			</div>
+			<div class="col-sm-1">
+				{% ifequal debate.state 'open' %}
+				<form id="id" method="post" action= "{% url 'resumen:index' %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea cerrar el debate?');">{% csrf_token %}
+					 <input type="hidden" value="{{ debate.id_debate  }}" name="id_deb">
+					 <button type="submit" class="btn btn-title" data-toggle="tooltip" title="Cerrar debate" >
+						 <i class="fa fa-archive"></i>
+					 </button>
+			 </form>
+			 {% endifequal %}
+			</div>
+		</div>
+	</header>
+  <img class="hidden" id="chartImg" />
+  <div class="row debInformation">
+    <div class="col-sm-3 debCenter">
+      <div class="thumbnail">
+        <img src="{{ debate.img.url }}" />
+      </div>
+    </div>
+    <div class="col-sm-2 debOwnerButton">
+      <button onclick="abrir_modal('updateImage_modal')"><i class="fa fa-pencil fa-lg"></i> Cambiar Foto</button>
+      <button onclick="abrir_modal('informationDeb_modal')"><i class="fa fa-info-circle" aria-hidden="true"></i> Ver Información</button>
+      <hr>
+      <div class="fb-share-button"
+        data-href="https://reddebate.cl/debate/{{ debate.id_debate }}/"
+        data-layout="button_count"
+        data-size="large">
+      </div>
+      <div class="tw-share-button">
+        <a href="https://twitter.com/intent/tweet?status={{debate.title}}+https://reddebate.cl/debate/{{ debate.id_debate }}/" target="_blank">
+          <img src="https://simplesharebuttons.com/images/somacro/twitter.png" alt="Twitter" />
+        Twittear
+        </a>
+    </div>
+    </div>
+    <div class="col-sm-7">
+      <div id="stats_div" >
+        {% if stats.positions_by_day|length > 1 %}
+        <div id="chart_div" style="width: 100%; height: 200px"></div>
+        {% else %}
+        <div class="no-data">
+          <div class="no-data">
+            <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+            Información no disponible
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+     {% if stats.total_position_num > 0 %}
+     <div class="col-sm-4">
+        <div id="piechart_postura"></div>
+     </div>
+     <div class="col-sm-4">
+        {% if stats.total_arg_num > 0 %}
+        <div id="piechart_argumento"></div>
+        {% else %}
+        <div class="no-data">
+          <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+          Información no disponible
+        </div>
+        {% endif %}
+     </div>
+     <div class="col-sm-4">
+        {% if stats.total_change_num > 0 %}
+        <div id="piechart_cambioPostura"></div>
+        {% else %}
+        <div class="no-data">
+          <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+          Información no disponible
+        </div>
+        {% endif %}
+     </div>
+     {% endif %}
+  </div>
+	<div name="argumentos-debate">
+		<div class="row">
+	    <div class="col-sm-6">
+				{% include 'participaciones.html' with name_position="A Favor" arguments=stats.infavor_args_list position=1 num_post=stats.infavor_position_num%}
+				<ul id="alertaArgumento1" class="list-group"></ul>
+			</div>
+			<div class="col-sm-6">
+				{% include 'participaciones.html' with name_position="En Contra" arguments=stats.against_args_list position=0 num_post=stats.against_position_num%}
+				<ul id="alertaArgumento0" class="list-group"></ul>
+			</div>
+		</div>
+	</div>
+	<p class="bottom-three">.</p>
+
+</div>
+</html>
+{% include 'stats.html'%}

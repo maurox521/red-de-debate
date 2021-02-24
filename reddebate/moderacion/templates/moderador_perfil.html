@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load static %}
+<link rel="stylesheet" type='text/css' href="{% static '/css/dataTables.css' %}" >
+{% if not user.is_staff and not user.is_superuser %}
+{% include '404.html' %}
+{% else %}
+<div class="container-debate">
+   <header>
+      <h2><i class="fa fa-bullhorn" aria-hidden="true"></i> Reportes</h2>
+   </header>
+   <main class="center">
+      <table id="myTable" class="table" cellspacing="0" width="100%">
+         <thead>
+            <tr>
+               <th>Elemento</th>
+               <th>Tipo</th>
+               <th>Razon</th>
+               <th>Creador</th>
+               <th>Reportado</th>
+            </tr>
+         </thead>
+         <tbody>
+            {% for report in data_report %}
+            <tr>
+               <td >{{report.element}}</td>
+               <td >{{report.type}}</td>
+               <td>{{report.reason}}</td>
+               <td >{{report.owner}}</td>
+               <td >{{report.reported}}</td>
+            </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+      <script src="{% static 'js/dataTable.js' %}"></script>
+   </main>
+</div>
+{% endif %}

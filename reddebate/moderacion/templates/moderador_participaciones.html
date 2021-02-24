@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<div class="datagrid{{position}}">
+  <table id="Tabla_Argumentos{{position}}">
+    <tr><thead>
+      	<th> # </th>
+      	<th> {{name_position}} </th>
+      	<!--<th> </th> -->
+      	<th> <div style="float:right"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <label id="label_num_post{{position}}"> {{num_post}} </label> </div> </th>
+    </thead></tr>
+    {% for arg in arguments %}
+      <tr>
+        <td style="border-bottom: #fff;">
+          <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
+        </td>
+        <td id="bordeTabla{{position}}" rowspan="3">
+            <p><a href="{% url arg.owner_type arg.url %}"><p1>{{arg.owner_arg}}:</p1></a> {{arg.text}}</p>
+        </td>
+        <td style="border-bottom: #fff; text-align: center;"> <!-- boton editar/rebatir-->
+      		<div style="float:right">
+            <button id="bot_rebatir{{position}}" type="submit" class="btn btn-args{{position}}" data-whatever="{{arg.counterargs}}" onclick='javascript:abrir_modal("respuesta_modal{{position}}{{arg.id_arg}}");' >
+              {{ arg.counterargs|length }} <span class="glyphicon glyphicon-comment"  ></span>
+            </button>
+          </div>
+        </td>
+
+          <div id="respuesta_modal{{position}}{{arg.id_arg}}" class="modal">
+            <div class="modal-content">
+              <h3><span class="close" onclick="cerrar_modal('respuesta_modal{{position}}{{arg.id_arg}}')">&times;</span>
+              <span class="glyphicon glyphicon-comment"></span> Contraargumentos</h3>
+                <div id="descripcion_argumento">
+                  <p1>{{arg.owner_arg}}</p1> argumentó...
+                  <h4>"{{arg.text}}"</h4>
+                </div>
+                  <div id="respuestas" class="modal-body">
+                    {% for counterarg in arg.counterargs%}
+                      <div class="dialogbox">
+                        <div class="body">
+                          <span class="tip tip-up"></span>
+                          <div class="message">
+                            <p><a href="{% url counterarg.owner_type counterarg.url %}"><p1>{{counterarg.owner}}:</p1></a> {{counterarg.text}}</p>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+            </div>
+          </div>
+
+      </tr>
+      <tr>
+        <td style="border-bottom: #fff; text-align: center;" id="val{{arg.id_arg}}"> {{arg.rate}}</td>
+        {% ifequal arg.post_usr_arg arg.11%}
+        <td style="border-bottom: #fff; text-align: center; display:none" id="change{{arg.id_arg}}"> <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> </td>
+        {% else %}
+        <td style="border-bottom: #fff; text-align: center; display:block" id="change{{arg.id_arg}}"> <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> </td>
+        {% endifequal %}
+      </tr>
+      <tr id="bordeTabla{{position}}">
+        <td>
+          <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+        </td>
+        <td><div style="float:right">
+            <form id="eliminar_arg" method="post" action= "{% url 'showDebate' debate.id_debate %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el argumento?');">{% csrf_token %}
+              <input type="hidden" value="{{ arg.id_arg }}" name="id_arg_delete">
+              <input type="hidden" value="{{ debate.id_debate }}" name="id_deb_arg_eliminar">
+              <button type="submit" class="btn btn-args{{position}}" > <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            </form>
+        </div></td>
+      </tr>
+    {% empty %}
+      <tr><td class="vacio"> </td></tr>
+    {% endfor %}
+  </table>
+</div>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<li class="cards__item">
+  <a href="{% url 'showDebate' deb.model.id_debate %}">
+    <div class="card">
+      {% ifequal deb.model.members_type 1 %}
+      <div class="ribbon"><span>Privado</span></div>
+      {% else %}
+      <div class="ribbon"><span></span></div>
+      {% endifequal %}
+      <div class="card__content">
+        <div class="card__title">
+          {{deb.model.title}}
+        </div>
+        <hr>
+        <p class="card__text">
+          <script type='text/javascript'>cortarTexto('{{deb.model.text}}')</script>
+        </p>
+        {% if index %}
+        <div class="datosIndex">
+          <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> {{deb.visits}}
+          <i class="fa fa-group"></i> {{deb.position_num}}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  </li>

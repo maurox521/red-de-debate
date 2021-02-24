@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<div class="datagrid{{position}}">
+  <table id="Tabla_Argumentos{{position}}">
+    <tr><thead>
+      	<th> # </th>
+      	<th> {{name_position}} </th>
+      	<!--<th> </th> -->
+      	<th> <div style="float:right"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <label id="label_num_post{{position}}"> {{num_post}} </label> </div> </th>
+    </thead></tr>
+    {% for arg in arguments %}
+      <tr>
+        <td style="border-bottom: #fff;">
+          {% ifequal debate.state 'open' %}
+              {% ifequal arg.exist_rate.0 'no' %}
+                <button id="sumar_val{{arg.id_arg}}" type="submit" class="btn btn-rateArg{{position}}" onclick='javascript:rateArg("{{arg.id_arg}}","positive","{{debate.id_debate}}");'>
+                <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
+                </button>
+              {% else %}
+                <button id="nulo_sumar_val{{arg.id_arg}}" type="submit" class="btn btn-nulo{{position}}" onclick='javascript:rateArg("{{arg.id_arg}}","null-positive","{{debate.id_debate}}");'>
+                <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
+                </button>
+              {% endifequal %}
+          {% endifequal %}
+        </td>
+        <td id="bordeTabla{{position}}" rowspan="3">
+            <p><a href="{% url arg.owner_type arg.url %}"><p1>{{arg.owner_arg}}:</p1></a> {{arg.text}}</p>
+        </td>
+        <td style="border-bottom: #fff; text-align: center;">
+      		<div style="float:right">
+            <button id="bot_rebatir{{position}}" type="submit" class="btn btn-args{{position}}" data-whatever="{{arg.counterargs}}" onclick='javascript:abrir_modal("respuesta_modal{{position}}{{arg.id_arg}}");' >
+              {{ arg.counterargs|length }} <span class="glyphicon glyphicon-comment"  ></span>
+            </button>
+          </div>
+        </td>
+
+          <div id="respuesta_modal{{position}}{{arg.id_arg}}" class="modal">
+            <div class="modal-content">
+              <h3><span class="close" onclick="cerrar_modal('respuesta_modal{{position}}{{arg.id_arg}}')">&times;</span>
+              <span class="glyphicon glyphicon-comment"></span> Contraargumentos</h3>
+                <div id="descripcion_argumento">
+                  <p1>{{arg.owner_arg}}</p1> argumentó...
+                  <h4>"{{arg.text}}"</h4>
+                </div>
+                  <div id="respuestas" class="modal-body">
+                    {% for counterarg in arg.counterargs%}
+                      <div class="dialogbox">
+                        <div class="body">
+                          <span class="tip tip-up"></span>
+                          <div class="row">
+                            <div class="col-sm-11">
+                              <p><a href="{% url counterarg.owner_type counterarg.url %}"><p1>{{counterarg.owner}}:</p1></a> {{counterarg.text}}</p>
+                            </div>
+                            <div class="col-sm-1">
+                              {% ifequal counterarg.id_owner user.id %}
+                                <form id="eliminar_counterarg" method="post" action= "{% url 'showDebate' debate.id_debate %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el contraargumento?');">{% csrf_token %}
+                                  <input type="hidden" value="{{ counterarg.id }}" name="id_counterarg_delete">
+                                  <button type="submit" class="btn btn-args{{position}}" > <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                                </form>
+                              {% else %}
+                              {% if counterarg.can_report_counterarg  %}
+                                <button id="bot_reportar" type="submit" class="btn btn-args{{position}}" onclick="javascript:abrir_modal('report_counterarg_modal{{position}}{{arg.id_arg}}{{counterarg.id}}')"><span class="glyphicon glyphicon-bullhorn"></span></button>
+                              {% endif %}
+                              <div id="report_counterarg_modal{{position}}{{arg.id_arg}}{{counterarg.id}}" class="modal">
+                              	<div class="modal-content">
+                              		<span class="close" onclick="cerrar_modal('report_counterarg_modal{{position}}{{arg.id_arg}}{{counterarg.id}}')">&times;</span>
+                              		<h3>Indica la razón de tu denuncia <span class="glyphicon glyphicon-bullhorn"></span></h3>
+                              		<form id="reasonReport" method="POST" enctype="multipart/form-data">{% csrf_token %}
+                              			<input type="hidden" value="{{counterarg.id}}" name="id_report_counterarg">
+                                    {{report_form.type}}
+                              			{% for field in report_form.reason   %}
+                              			<div class="inputGroup">{{field}}</div>
+                              			{%endfor%}
+                              		<button name="report_counterargument" type="submit" class="btn btn-index">Denunciar</button>
+                              	</form>
+                              	</div>
+                              </div>
+                              {% endifequal %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  {% ifequal debate.state 'open' %}
+                    {% ifequal counterargs_type 1 %}
+                      {% ifequal counterarg_target name_position %}
+                        {% if arg.can_counterarg %}
+                            <div id="form_rebatir" class="modal-footer">
+                              <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+                                {{counterarg_form.as_p}}
+                                <input type="hidden" value="{{arg.id_arg}}" name="id_argument{{position}}">
+                                <button name="counterargument{{position}}"type="submit" class="btn btn-deb{{position}}">Responder</button>
+                              </form>
+                            </div>
+                        {% else %}
+                            <div>Ya no puedes contraargumentar</div>
+                        {% endif %}
+                      {% endifequal %}
+                      {% else %}
+                        {% if arg.can_counterarg %}
+                            <div id="form_rebatir" class="modal-footer">
+                              <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+                                {{counterarg_form.text}}
+                                {{counterarg_form.owner_type}}
+                                <input type="hidden" value="{{arg.id_arg}}" name="id_argument{{position}}">
+                                <button name="counterargument{{position}}"type="submit" class="btn btn-deb{{position}}">Responder</button>
+                              </form>
+                            </div>
+                         {% else %}
+                            <div>Ya no puedes contraargumentar</div>
+                         {% endif %}
+                    {% endifequal %}
+                  {% endifequal %}
+            </div>
+          </div>
+
+      </tr>
+      <tr>
+        <td style="border-bottom: #fff; text-align: center;" id="val{{arg.id_arg}}"> {{arg.rate}}</td>
+        {% ifequal arg.position_owner position%}
+        <td style="display:none;" id="change{{arg.id_arg}}">
+          <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+        </td>
+        {% else %}
+        <td id="change{{arg.id_arg}}">
+          <div class="change-position-mark{{position}}" >
+            <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+          </div>
+        </td>
+        {% endifequal %}
+      </tr>
+      <tr id="bordeTabla{{position}}">
+        <td>
+          {% ifequal debate.state 'open' %}
+              {% ifequal arg.exist_rate.1 'no' %}
+              <button id="quitar_val{{arg.id_arg}}" type="submit" class="btn btn-rateArg{{position}}" onclick='javascript:rateArg("{{arg.id_arg}}","negative","{{debate.id_debate}}");'>
+              <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+              </button>
+              {% else %}
+              <button id="nulo_quitar_val{{arg.id_arg}}" type="submit" class="btn btn-nulo{{position}}" onclick='javascript:rateArg("{{arg.id_arg}}","null-negative","{{debate.id_debate}}");'>
+              <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+              </button>
+              {% endifequal %}
+          {% endifequal %}
+        </td>
+        <td><div style="float:right">
+          {% ifequal arg.owner_arg_id user.id %}
+            <form id="eliminar_arg" method="post" action= "{% url 'showDebate' debate.id_debate %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el argumento?');">{% csrf_token %}
+              <input type="hidden" value="{{ arg.id_arg }}" name="id_arg_delete">
+              <input type="hidden" value="{{ debate.id_debate }}" name="id_deb_arg_eliminar">
+              <button type="submit" class="btn btn-args{{position}}" > <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            </form>
+          {% else %}
+            {%if arg.can_report_arg%}
+              <button id="bot_reportar" type="submit" class="btn btn-args{{position}}" onclick="javascript:abrir_modal('report_arg_modal{{position}}{{arg.id_arg}}')"><span class="glyphicon glyphicon-bullhorn"></span></button>
+            {%endif%}
+            <div id="report_arg_modal{{position}}{{arg.id_arg}}" class="modal">
+            	<div class="modal-content">
+            		<span class="close" onclick="cerrar_modal('report_arg_modal{{position}}{{arg.id_arg}}')">&times;</span>
+            		<h3>Indica la razón de tu denuncia <span class="glyphicon glyphicon-bullhorn"></span></h3>
+            		<form id="reasonReport" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            			<input type="hidden" value="{{arg.id_arg}}" name="id_report_arg">
+                  {{report_form.type}}
+            			{% for field in report_form.reason   %}
+            			<div class="inputGroup">{{field}}</div>
+            			{%endfor%}
+            		<button name="report_argument" type="submit" class="btn btn-index">Denunciar</button>
+            	</form>
+            	</div>
+            </div>
+          {%endifequal%}
+        </div></td>
+      </tr>
+    {% empty %}
+      <tr><td class="vacio"> </td></tr>
+    {% endfor %}
+  </table>
+</div>

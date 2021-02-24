@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+{% if user.is_staff or user.is_superuser %}
+  <div id="search" class="morphsearch">
+    <button type="button" class="close">×</button>
+    <form action="{% url 'index' %}" method="get" accept-charset="utf-8" class="morphsearch-form">
+      <input name="q" type="search" placeholder="¿Qué buscas?" autocomplete="off">
+      <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+    </form>
+    <div class="morphsearch-content">
+            <div class="dummy-column">
+              <h2>Usuarios</h2>
+              {% for item in top_users %}
+               <a class="dummy-media-object" href="{% url 'username' id_usr=item.user.id %}">
+                 <img class="round" src="{{ item.profile.img.url }}"/>
+                 <h3>{{ item.user.username }}</h3>
+               </a>
+             {% endfor %}
+            </div>
+            <div class="dummy-column">
+              <h2>Popular</h2>
+              {% for deb in moderator_top_deb %}
+               <a class="dummy-media-object" href="{% url 'showDebate' deb.model.id_debate %}">
+                 <label><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{deb.position_num}}</label>
+                 <h3>{{ deb.model.title }}</h3>
+               </a>
+             {% endfor %}
+            </div>
+            <div class="dummy-column">
+              <h2>Reciente</h2>
+              {% for deb in moderator_recent_deb %}
+               <a class="dummy-media-object" href="{% url 'showDebate' deb.model.id_debate %}">
+                 <label><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{deb.position_num}}</label>
+                 <h3>{{ deb.model.title }}</h3>
+               </a>
+             {% endfor %}
+            </div>
+          </div><!-- /morphsearch-content -->
+  </div>
+  <div id="nuevoDebateBtn" align="right" >
+		<a href="#search" class="btn btn-debate"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
+	</div>
+  <br><br>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-2">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">¡Hola!</h3>
+         </div>
+          <div class="panel-body">
+            <p>{{ user.get_full_name }}</p>
+            <a href="{% url 'logout' %}"> Cerrar Sesión</a>
+          </div>
+       </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Top Tags</h3>
+          </div>
+          <div class="panel-body">
+            {% for tag in top_tags %}
+              <a href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a><br>
+              <p> {{tag.num_times}}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-10">
+        <div class="row">
+					<div class="col-sm-6">
+						<div class="control-group">
+							<!-- <form id="tipoDeb" method="post" action= "{% url 'index' %}" enctype="multipart/form-data">{% csrf_token %} -->
+								<label class="control control--radio">Todos
+									<input id="r1" type="radio" name="radioDeb" value="2" checked/>
+									<div class="control__indicator"></div>
+								</label>
+								<label class="control control--radio">Públicos
+									<input id="r2" type="radio" name="radioDeb" value="0"/>
+									<div class="control__indicator"></div>
+								</label>
+								<label class="control control--radio">Privados
+									<input id="r3" type="radio" name="radioDeb" value="1"/>
+									<div class="control__indicator"></div>
+							</label>
+						</div>
+					</div>
+					<div class="col-sm-5">
+						<div class="control-group">
+									<form method="GET" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+												{{ order_form.order_type }}
+												<button type='submit'> ok </button>
+									</form>
+							</div>
+						</div>
+						<div id="deb_order_select" class="hidden">{{debates_order}}</div>
+					</div>
+        <div id="alertaDeb0" class="alert alert-info" role="alert">
+          <a href="javascript:location.reload()" class="alert-link">Hay nuevos debates...</a>
+        </div>
+        <div id="alertaDeb1" class="alert alert-info" role="alert">
+          <a href="javascript:location.reload()" class="alert-link">Hay nuevos debates privados...</a>
+        </div>
+        <ul id="todos" class="cards">
+          {% for deb in moderator_view_deb %}
+            {% include 'grilla.html' with index=True%}
+          {% endfor %}
+        </ul>
+        <ul id="publicos" class="cards">
+          {% for deb in moderator_view_deb %}
+            {% ifequal deb.model.members_type 0 %}
+              {% include 'grilla.html' with index=True%}
+            {% endifequal %}
+          {% endfor %}
+        </ul>
+        <ul id="privados" class="cards">
+          {% for deb in moderator_view_deb %}
+            {% ifequal deb.model.members_type 1 %}
+              {% include 'grilla.html' with index=True%}
+            {% endifequal %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="bottom-three">.</p>
+{% endif %}

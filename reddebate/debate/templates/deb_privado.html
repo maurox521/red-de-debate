@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<div id="denuncia_deb_modal" class="modal">
+   <div class="modal-content">
+      <span class="close" onclick="cerrar_modal('denuncia_deb_modal')">&times;</span>
+      <h3>Indica la razón de tu denuncia <span class="glyphicon glyphicon-bullhorn"></span></h3>
+      <form id="reasonReport" method="POST" enctype="multipart/form-data">
+         {% csrf_token %}
+         <input name="id_deb" type="hidden" value={{debate.id_debate}}>
+         {{report_form.type}}
+         {% for field in report_form.reason   %}
+         <div class="inputGroup">{{field}}</div>
+         {%endfor%}
+         <button name="report_debate" type="submit" class="btn btn-index">Denunciar</button>
+      </form>
+   </div>
+</div>
+<div class="container-debate">
+  <header>
+    <div class="row">
+      <div class="col-sm-11">
+        <h2>{{ debate.title }}</h2>
+        <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Visto {{visits}} veces
+        <input id="idDebate" type="hidden" value={{debate.id_debate}}>
+      </div>
+      <div class="col-sm-1">
+      {% if can_report_deb %}
+         <button class="btn btn-title" data-toggle="tooltip" title="Denunciar debate" onclick="javascript:abrir_modal('denuncia_deb_modal')">
+           <span class="glyphicon glyphicon-bullhorn"></span>
+         </button>
+      {% endif %}
+      </div>
+    </div>
+  </header>
+  <div class="row debInformation">
+    <div class="col-sm-3 debCenter">
+      <div class="thumbnail">
+        <img src="{{ debate.img.url }}" />
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div>
+          <table>
+          <tr>
+            <td width=120 ><p1>Fecha inicio</p1></td><td>{{ debate.date }}</td>
+          </tr>
+          <tr>
+            <td width=120 ><p1>Estado</p1></td><td> Cerrado </td>
+          </tr>
+        </table>
+        <br>
+        <p class="debateDescripcion">{{ debate.text }}</p>
+      </div>
+    </div>
+    <div class="col-sm-5">
+      <div id="stats_div" >
+        {% if stats.positions_by_day|length > 1 %}
+        <div id="chart_div" style="width: 100%; height: 200px"></div>
+        {% else %}
+        <div class="no-data">
+          <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+          Información no disponible
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-3 textCenter">
+      <div class="fb-share-button"
+        data-href="https://reddebate.cl/debate/{{ debate.id_debate }}/"
+        data-layout="button_count"
+        data-size="large">
+      </div>
+      <div class="tw-share-button">
+        <a href="https://twitter.com/intent/tweet?status={{debate.title}}+https://reddebate.cl/debate/{{ debate.id_debate }}/" target="_blank">
+          <img src="https://simplesharebuttons.com/images/somacro/twitter.png" alt="Twitter" />
+        Twittear
+        </a>
+    </div>
+    </div>
+    <div class="col-sm-9">
+      {% for tag in tags%}
+      <a class="tag-deb" href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a>
+      {% endfor%}
+    </div>
+  </div>
+  <div id="stats_div" >
+    <img class="hidden" id="chartImg" />
+    {% if stats.total_position_num > 0 %}
+    <h3>Estadísticas</h3>
+    <div class="row">
+      <div class="col-sm-4">
+        <div id="piechart_postura"></div>
+       </div>
+       <div class="col-sm-4">
+       {% if stats.total_arg_num > 0 %}
+        <div id="piechart_argumento"></div>
+       {% else %}
+       <div class="no-data">
+         <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+         Información no disponible
+       </div>
+       {% endif %}
+       </div>
+       <div class="col-sm-4">
+       {% if stats.total_change_num > 0 %}
+       <div id="piechart_cambioPostura"></div>
+       {% else %}
+       <div class="no-data">
+         <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+         Información no disponible
+       </div>
+       {% endif %}
+       </div>
+    </div>
+    <br><br><br>
+    <div class="row">
+      <div class="col-sm-6">
+        {% if stats.total_change_num > 0 %}
+        <div id="chart_razonCambio"></div>
+        {% else %}
+        <div class="no-data">
+          <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+          Información no disponible
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-sm-6">
+        {% ifequal stats.best_argument 0 %}
+        <div class="no-data">
+          <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+          Información no disponible
+        </div>
+        {% else %}
+        <div class="datagrid1 stats_arg">
+          <table id="table_best_arg{{stats.best_argument.position}}">
+            <thead>
+            <tr>
+              <th><i class="fa fa-star" aria-hidden="true"></i></th>
+              <th>Argumentos mejor valorados</th>
+              <th>Postura</th>
+            </tr>
+            </thead>
+            <tr>
+              <td>{{stats.best_argument.score}}</td>
+              <td>
+                <p>{{stats.best_argument.text}}</p>
+              </td>
+              {% ifequal stats.best_argument.position 0%}
+              <td class="stats_arg0"> En Contra</td>
+              {% else %}
+              <td class="stats_arg1"> A Favor</td>
+              {% endifequal %}
+            </tr>
+            <tr>
+              <td>{{stats.second_argument.score}}</td>
+              <td>
+                <p>{{stats.second_argument.text}}</p>
+              </td>
+              {% ifequal stats.second_argument.position 0%}
+              <td class="stats_arg0"> En Contra</td>
+              {% else %}
+              <td class="stats_arg1"> A Favor</td>
+              {% endifequal %}
+            </tr>
+          </table>
+        </div>
+        {% endifequal %}
+      </div>
+    </div>
+    <br><br>
+    {% else %}
+    <div class="no-data">
+      <i class="fa fa fa-frown-o" aria-hidden="true"></i><br>
+      Estadísticas no disponibles por falta de participación
+    </div>
+    {% endif %}
+  </div>
+</div>
+</html>
+{% include 'stats.html'%}

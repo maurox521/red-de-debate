@@ -1,0 +1,33 @@
+<script type="text/javascript">
+$(document).ready(function(){
+  // try {
+  //   document.getElementById("bot_af").disabled = true;
+  //   document.getElementById("bot_ec").disabled = true;
+  // } catch (e) {
+  //   document.getElementById("bot_af_init").disabled = true;
+  //   document.getElementById("bot_ec_init").disabled = true;
+  // }
+	google.charts.load('current', {'packages':['corechart', 'bar', 'annotationchart']});
+
+    google.charts.setOnLoadCallback(posturaChart);
+    if ({{stats.total_arg_num }}>0) google.charts.setOnLoadCallback(argumentosChart);
+  	google.charts.setOnLoadCallback(cambioPosturaChart);
+    if ({{stats.total_change_num}}>0) google.charts.setOnLoadCallback(razonCambioChart);
+  	google.charts.setOnLoadCallback(posturasTiempo);
+
+	});
+	var varGlobal = {
+		infavor_position : {{stats.infavor_position_num}},
+		against_position : {{stats.against_position_num}},
+		args_infavor : {{stats.infavor_args_list|length}},
+		args_against : {{stats.against_args_list|length}},
+		infavor_to_against: {{stats.infavor_to_against}},
+		against_to_infavor: {{stats.against_to_infavor}},
+		position_change: {{stats.infavor_to_against}} + {{stats.against_to_infavor}},
+		reason_infavor_to_against: {{stats.reason_infavor_to_against}},
+		reason_against_to_infavor: {{stats.reason_against_to_infavor}},
+	};
+  var positions_by_day = {{stats.positions_by_day|safe}};
+  var owner_id = {{owner_user.id}}
+  var actual_id = {{user.id}}
+</script>

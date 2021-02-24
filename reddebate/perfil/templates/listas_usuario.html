@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+
+	{% block content %}
+  <div class="container-debate">
+    <header>
+      <h2>Mis Listas</h2>
+      <p>{{user}}</p>
+    </header>
+    <main>
+             <div class="panel-group">
+              {% for list in actual_user_list %}
+              <div class="panel panel-list">
+                <div class="panel-heading">
+                    <div class="row panel-title">
+                      <div class="col-sm-10">
+                        <a data-toggle="collapse" href="#{{list.name}}">{{list.name}}</a>
+                      </div>
+                      <div class="col-sm-1">
+                        <a href="{% url 'memberList' list.id %}"> <span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+                      </div>
+                      <div class="col-sm-1">
+                        <form method="post" action= "{% url 'userList' %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar la lista?');">{% csrf_token %}
+                          <input type="hidden" value="{{ list.id }}" name="id_list">
+                          <button type="submit"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                        </form>
+                      </div>
+                    </div>
+                </div>
+                <div id="{{list.name}}" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    {% for usr in users_in_list %}
+                    {% ifequal list.id usr.list_id %}
+											{% ifequal usr.type 'username' %}
+                      <p><a href="{% url 'username' usr.name.id %}">{{usr.name}}</a></p>
+											{% else %}
+											<p><a href="{% url 'alias' usr.alias %}">{{usr.alias}}</a></p>
+											{% endifequal %}
+                    {% endifequal %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+						{% if form_list.name.errors %}
+						<div class="alert alert-danger">
+            	{{form_list.name.errors}}
+							<script>
+							$(document).ready(function(){
+									try{document.getElementById("boton_lista").click();}
+									catch(err){}});
+							</script>
+						</div>
+            {% endif %}
+            <a id = 'boton_lista' onclick='javascript:form_perfil("boton_lista", "formulario_lista" );'><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Agregar Lista </a>
+            <div id='formulario_lista' style="display: none;" >
+               <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+               <div class="fieldWrapper">
+                 {{ form_list.non_field_errors }}
+								 {{ form_list.name }}
+                 {{ form_list.owner_id }}
+               </div>
+               <button name="nuevaLista" type="submit" class="btn btn-index">Agregar</button>
+               <label type="button" onclick='cancelar_form("boton_lista", "formulario_lista");'> Cancelar </label>
+             </form>
+            </div>
+    </main>
+  </div>
+  {% endblock content %}
+
+</html>

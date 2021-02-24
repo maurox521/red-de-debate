@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+{% block content %}
+<div class="container-debate">
+  <header>
+    <h2>{{list.name}}</h2>
+    <p>Lista de usuarios</p>
+  </header>
+  <main>
+    <a href="javascript:abrir_modal('usuariosLista_modal')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Agregar</a>
+    {% for item in list_profile %}
+    {% ifequal item.type 'username' %}
+    <a class="dummy-media-object usuarioLista" href="{% url 'username' item.user.user_id %}">
+      <img class="round" src="{{ item.perfil.img.url }}"/>
+      <h3>{{item.user}}</h3>
+      <form method="post" action= "{% url 'memberList' list.id  %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el usuario?');">{% csrf_token %}
+        <input type="hidden" value="{{ item.user.user_id }}" name="id_usr_lista">
+        <input type="hidden" value="{{ list.id }}" name="id_list">
+        <input type="hidden" value="username" name="type_user">
+        <button type="submit"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+      </form>
+    </a>
+    {% else %}
+    <a class="dummy-media-object usuarioLista" href="{% url 'alias' item.perfil.alias %}">
+      <img class="round" src="{% static 'img/RDLogo05.png' %}"/>
+      <h3>{{item.perfil.alias}}</h3>
+      <form method="post" action= "{% url 'memberList' list.id  %}" enctype="multipart/form-data" onsubmit="return confirm('¿Seguro que desea eliminar el usuario?');">{% csrf_token %}
+        <input type="hidden" value="{{ item.user.user_id }}" name="id_usr_lista">
+        <input type="hidden" value="{{ list.id }}" name="id_list">
+        <input type="hidden" value="alias" name="type_user">
+        <button type="submit"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+      </form>
+    </a>
+    {% endifequal %}
+    {% endfor %}
+    <div id="usuariosLista_modal" class="modal">
+      <div class="modal-content">
+        <h5>
+          <span class="close" onclick="cerrar_modal('usuariosLista_modal')">&times;</span><br>
+          Usuarios
+        </h5>
+        <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+          <div class="fieldWrapper">
+            {{form.errors }}
+            <input type="text" value="" name="searchColumn" id="searchUser2" placeholder="Busca a un usuario..."/>
+            {{ form.list_id }}
+            <div id="containercheckbox2" class="userscheckbox">
+            {% for field in form.user %}
+            <div class="inputGroup">{{field}}</div>
+            {%endfor%}
+            </div>
+            <button name="new_user_list" type="submit" class="btn btn-index">Agregar</button>
+            <label type="button" onclick="cerrar_modal('usuariosLista_modal')"> Cancelar </label>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+{% endblock content %}
+
+</html>

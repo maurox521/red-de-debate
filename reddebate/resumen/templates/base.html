@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+	<head>
+		<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/RDLogo02.png' %}"/>
+
+			<script src="{% static 'js/jquery.js' %}"></script>
+      <script src="https://www.gstatic.com/charts/loader.js"></script>
+			<link rel="stylesheet" type='text/css' href="{% static '/css/style.css' %}" >
+      <link rel="stylesheet" type='text/css' href="{% static '/css/bootstrap-tagsinput.css' %}" >
+
+			<script src="{% static 'js/bootstrap.js' %}"></script>
+      <script src="{% static 'js/bootstrap-tagsinput.js' %}"></script>
+			<script src="{% static 'js/functions.js' %}"></script>
+			<script src="{% static 'js/channels.js' %}"></script>
+      <script src="{% static 'js/reconnecting-websocket.min.js' %}"></script>
+			<title>Red de Debate</title>
+	</head>
+<body>
+<script type="text/javascript">
+(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s); js.id = id;
+		js.src = "https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v3.0";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+
+  function rateArg(argument, rateusr, id){
+		 $.ajax({
+				 url:  $(this).attr("href"),
+				 type: 'POST',
+				 data:{  id_arg : argument,
+								 option_rate: rateusr,
+								 id_deb: id,
+								 csrfmiddlewaretoken: '{{ csrf_token }}'
+							 } ,
+							 success: function(data) {
+								 location.reload()
+							 },
+							 failure: function(data) {
+									 alert('Error de conexión');
+							 },
+							 crossDomain: true
+					 });
+   }
+  $(document).ready(
+    function(){
+			try {
+				$('[data-toggle="tooltip"]').tooltip();
+			} catch (e) {
+				// no hay tooltip
+			}
+			$('input[name=radioDeb]').change(function(){
+		        // $('#tipoDeb').submit();
+						var option_rate = $("input[name=radioDeb]:checked")
+						if (option_rate.val() == 0){
+							document.getElementById('publicos').style.display = 'flex';
+							document.getElementById('privados').style.display = 'none';
+							document.getElementById('todos').style.display = 'none';
+						}
+						else if (option_rate.val() == 1) {
+							document.getElementById('privados').style.display = 'flex';
+							document.getElementById('publicos').style.display = 'none';
+							document.getElementById('todos').style.display = 'none';
+						}
+						else{
+							document.getElementById('todos').style.display = 'flex';
+							document.getElementById('publicos').style.display = 'none';
+							document.getElementById('privados').style.display = 'none';
+						}
+		   });
+			 $.getJSON("{% static 'stopwords.json' %}", function(json) {
+				var stopword = json;
+ 				$("#debTitleForm").blur(function(){
+					var text = $("#debTitleForm").val()
+					console.log(text);
+    			text = (text.toLowerCase()).split(" ");
+					console.log(text);
+					for (var i = 0; i < stopword.length; i++) {
+						text = text.filter(e => e !== stopword[i]);
+					};
+					$('#tagsForms').tagsinput('add', text.join());
+				});
+ 			});
+		 $('#nuevodebateform').on('keyup keypress', function(e) {
+			  var keyCode = e.keyCode || e.which;
+			  if (keyCode === 13) {
+			    e.preventDefault();
+			    return false;
+			  }
+			});
+			$('#debOrderTypeForm').val($('#deb_order_select').text())
+
+      try{
+				$('[data-toggle="popover"]').popover();
+        document.getElementById("dbt_abiertos").click();}
+      catch(err){}
+			$(".tab-slider--body").hide();
+  		$(".tab-slider--body:first").show();
+			$(".tab-slider--nav li").click(function() {
+			  $(".tab-slider--body").hide();
+			  var activeTab = $(this).attr("rel");
+			  $("#"+activeTab).fadeIn();
+				if($(this).attr("rel") == "tab2"){
+					$('.tab-slider--tabs').addClass('slide');
+				}else{
+					$('.tab-slider--tabs').removeClass('slide');
+				}
+			  $(".tab-slider--nav li").removeClass("active");
+			  $(this).addClass("active");
+			});
+    });
+		$(document).ready(
+	    function(){
+				// get tallest tab__content element
+				 let height = -1;
+			 $('.tab__content').each(function() {
+				 height = height > $(this).outerHeight() ? height : $(this).outerHeight();
+						$(this).css('position', 'absolute');
+			 });
+				 // set height of tabs + top offset
+			 $('[data-tabs]').css('min-height', height + 40 + 'px');
+			});
+			$(document).ready(
+	    function(){
+				// get tallest tab2__content element
+				 let height = -1;
+			 $('.tab2__content').each(function() {
+				 height = height > $(this).outerHeight() ? height : $(this).outerHeight();
+						$(this).css('position', 'absolute');
+			 });
+				 // set height of tabs2 + top offset
+			 $('[data-tabs2]').css('min-height', height + 40 + 'px');
+			});
+			size_li = $("#myList li").size();
+    x=3;
+    $('#myList li:lt('+x+')').show();
+    $('#loadMore').click(function () {
+        x= (x+5 <= size_li) ? x+5 : size_li;
+        $('#myList li:lt('+x+')').show();
+    });
+    $('#showLess').click(function () {
+        x=(x-5<0) ? 3 : x-5;
+        $('#myList li').not(':lt('+x+')').hide();
+    });
+		$(document).ready(function () {
+    size_li = $("#myList li").size();
+    x=3;
+    $('#myList li:lt('+x+')').show();
+    $('#loadMore').click(function () {
+        x= (x+5 <= size_li) ? x+5 : size_li;
+        $('#myList li:lt('+x+')').show();
+				if (x==size_li){
+					$('#loadMore').hide();
+				}
+    });
+    $('#showLess').click(function () {
+        x=(x-5<0) ? 3 : x-5;
+        $('#myList li').not(':lt('+x+')').hide();
+    });
+});
+$(document).ready(function(){
+	filtroCheckbox('#searchUser2');
+	filtroPanel('#searchUser3');
+  filtroCheckbox('#searchLista2');
+});
+</script>
+
+	<div class="page-header">
+	    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="{% url 'index' %}"><IMG SRC="{% static 'img/RDLogo03.png' %}" height='65' ALT="RedDebateLogo"></a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="{% url 'index' %}">Debates Abiertos</a>
+                    </li>
+										<li>
+                        <a href="{% url 'closedIndex' %}">Debates Cerrados</a>
+                    </li>
+										{% if user.is_staff or user.is_superuser %}
+										<li>
+                        <a href="{% url 'username' user.id %}">Reportes</a>
+                    </li>
+										{% else %}
+                    <li  class="dropdown-menu">
+												<div class="dropdown">
+											    <button class="btn" type="button" data-toggle="dropdown">Perfil
+											    <span class="caret"></span></button>
+											    <ul class="dropdown-menu">
+											      <li><a href="{% url 'debates' %}">Mis Debates</a></li>
+											      <li><a href="{% url 'userList' %}">Mis Listas</a></li>
+											      <li><a href="{% url 'username' user.id %}">Mis Datos</a></li>
+														<li role="separator" class="divider"></li>
+														<li><a href="{% url 'logout' %}"> Cerrar Sesión</a></li>
+											    </ul>
+											  </div>
+                    </li>
+										{% endif %}
+										<li>
+											<a href="javascript:openNav()" rel="popover" title="Notificaciones">
+												<span id="alertaSpan" class="glyphicon glyphicon-bell alerta_notificacion"></span>
+												{% if noleidas > 0 %}
+												<span id="numSpan" class="badge">{{noleidas}}</span>
+												{% endif %}
+											</a>
+										</li>
+                </ul>
+            </div>
+						<div id="mySidenav" class="sidenav">
+						  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+							<ul id="myList">
+								{% for notificacion in notificaciones  %}
+
+								<li id="notificacion{{notificacion.object.id}}" class="notificacion{{notificacion.object.state}}">
+									<i class="{{notificacion.object.type}}"></i>
+									<a href="{% url 'readNotification' notificacion.object.id_debate_id notificacion.object.id %}">
+										{{notificacion.object}}<br>
+										<label>{{notificacion.tiempo}}</label>
+									</a>
+								</li>
+								{% endfor %}
+							</ul>
+							<div id="loadMore">Ver más</div>
+						</div>
+        </div>
+    	</nav>
+			<label id="id_usuario_actual" class="hide" value="{{user.id}}">{{user.id}}</label>
+    </div>
+		{% if user.is_staff or user.is_superuser %}
+		<div class="moderador">
+			{% if user.is_superuser %}
+				Usuario Administrador
+			{% else %}
+				Usuario Moderador
+			{% endif %}
+		</div>
+		{% endif %}
+	{% block content %}
+	{% endblock content %}
+<label id="id_usuario_actual" class="hide" value="{{user.id}}">{{user.id}}</label>
+  <div class="container">
+    <div align="right">
+      <button onclick="") type="submit" class="btn btn-index" > Reportar Problema</button>
+    </div>
+  </div>
+	</body>
+</html>

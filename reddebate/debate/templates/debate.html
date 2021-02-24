@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+{% block content %}
+{% if user.is_staff or user.is_superuser%}
+		{% include 'moderador_debate.html'%}
+{% else %}
+		{% ifequal owner_user.id user.id %}
+				{% include 'deb_creador.html'%}
+		{% else %}
+				{% ifequal debate.state 'open' %}
+						{% if participate %}
+								{% include 'deb_abierto.html'%}
+						{% else %}
+								{% include '404.html' %}
+						{% endif %}
+				{% else %}
+						{% if participate %}
+								{% include 'deb_cerrado.html'%}
+						{% else %}
+								{% include 'deb_privado.html' %}
+						{% endif %}
+				{% endifequal %}
+		{% endifequal %}
+{% endif %}
+{% endblock content %}
+</html>

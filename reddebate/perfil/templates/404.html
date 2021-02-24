@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+{% block content %}
+<div class="container-debate">
+  <header>
+    <h2>OOPS! Ha ocurrido un problema </h2>
+    <p>Elemento no encontrado</p>
+  </header>
+  <main>
+    <img style="max-width: 50%" src="{% static 'img/404.png' %}"/>
+  </main>
+</div>
+
+{% endblock content %}
+
+</html>

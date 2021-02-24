@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+<html>
+{% block content %}
+<link rel="stylesheet" type='text/css' href="{% static '/css/perfil.css' %}" >
+{% if user.is_staff or user.is_superuser %}
+{% include 'moderador_perfil.html' %}
+{% else %}
+<div class="row">
+  <div class="col-sm-6">
+    <div class="container-profile left-container">
+      <header>
+      </header>
+      <main>
+        <div class="center photo-left">
+          <img class="photo" src="{{ alias.img.url }}"/>
+          <div class="active"></div>
+          <h5><a id = 'boton_img' onclick='javascript:form_perfil("boton_img", "formulario_img" );'>
+              Cambia tu foto <i class="fa fa-camera" aria-hidden="true"></i>
+          </a></h5>
+          <h4 class="fullname">{{actual_user.get_full_name}}</h4>
+          <p class="info">{{ actual_user.email }}</p>
+        </div>
+        <hr>
+        <div class="personal">
+          <p class="desc-datos">Username</p>
+          <p class="datos">{{actual_user.username}}</p>
+          <p class="desc-datos">Miembro desde</p>
+          <p class="datos">{{actual_user.date_joined}}</p>
+          <p class="desc-datos">Alias</p>
+          <p class="datos">{{alias.alias}} <a id = 'boton_alias' onclick='javascript:form_perfil("boton_alias", "formulario_alias" );'> <span class="glyphicon glyphicon-edit" aria-hidden="true" ></span> </a></p>
+          {% if alias_form.alias.errors %}
+          <div class="alert alert-danger">
+              {{ alias_form.alias.errors }}
+              <script>
+              $(document).ready(function(){
+              		try{document.getElementById("boton_alias").click();}
+              		catch(err){}});
+              </script>
+          </div>
+          {% endif %}
+          <div id='formulario_alias' style="display: none;" >
+            <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+  						<div class="fieldWrapper">
+                  {{ alias_form.non_field_errors }}
+                  {{ alias_form.user }}
+  						    {{ alias_form.alias }}
+  						</div>
+              <button name="new_alias" type="submit" class="btn btn-index">Cambiar</button>
+              <label type="button" onclick='cancelar_form("boton_alias", "formulario_alias" );'> Cancelar </label>
+            </form>
+           </div>
+           <div id='formulario_img' style="display: none;" >
+             <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+               <div class="fieldWrapper">
+                   {{ imagen_form.non_field_errors }}
+                   {{ imagen_form.as_p }}
+               </div>
+               <button name="new_image" type="submit" class="btn btn-index">Cambiar</button>
+               <label type="button" onclick='cancelar_form("boton_img", "formulario_img" );'> Cancelar </label>
+             </form>
+           </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="container-profile right-container">
+      <header class="header-info">
+        <h3><i class="fa fa-bar-chart" aria-hidden="true"></i> Estadísticas</h3>
+      </header>
+      <main class="center">
+            <div class="stats row">
+              <div class="stat col-xs-6">
+                <h4 class="name">{{alias.reputation}}</h4>
+                <p class="info">Reputación</p>
+              </div>
+              <div class="stat col-xs-6">
+                <h4 class="name">{{stats.deb_num}}</h4>
+                <p class="info">Debates</p>
+              </div>
+            </div>
+            <div class="stats row">
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.position_num}}</p>
+                <p class="desc-stat">Posturas</p>
+              </div>
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.args_num}}</p>
+                <p class="desc-stat">Argumentos</p>
+              </div>
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.counterargs_num}}</p>
+                <p class="desc-stat">Contraargumentos</p>
+              </div>
+            </div>
+            <div class="stats row">
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.reached_users}}</p>
+                <p class="desc-stat">Personas alcanzadas </p>
+              </div>
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.best_arg}}</p>
+                <p class="desc-stat">Mejor Argumento</p>
+              </div>
+              <div class="stat col-xs-4">
+                <p class="number-stat">{{stats.worse_arg}}</p>
+                <p class="desc-stat">Peor Argumento</p>
+              </div>
+            </div>
+
+      </main>
+    </div>
+    <div class="container-profile right-container">
+      <header class="header-info">
+        <h3><i class="fa fa-tags" aria-hidden="true"></i> Tags</h3>
+      </header>
+      <main>
+        <div class="tag-cloud">
+            {% for key,value in stats.tags.items %}
+              <a href="{% url 'tagged' key %}" class="size-{{ value }}">{{ key }}</a>
+            {% endfor %}
+          </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+
+{% endif %}
+{% endblock content %}
+
+</html>
